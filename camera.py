@@ -4,6 +4,7 @@ from matrix import *
 class Camera:
     def __init__(self, render, position):
         self.render = render
+        # начальное расположение камеры
         self.position = np.array([*position, 1.0])
         self.forward = np.array([0, 0, 1, 1])
         self.up = np.array([0, 1, 0, 1])
@@ -12,7 +13,7 @@ class Camera:
         self.v_fov = self.h_fov * (render.HEIGHT / render.WIDTH)
         self.near_plane = 0.1
         self.far_plane = 100
-        self.moving_speed = 0.3
+        self.moving_speed = 0.6
         self.rotation_speed = 0.015
 
         self.anglePitch = 0
@@ -66,6 +67,9 @@ class Camera:
         self.camera_update_axii()
         return self.translate_matrix() @ self.rotate_matrix()
 
+
+
+   # функции для формирвоания матриц
     def translate_matrix(self):
         x, y, z, w = self.position
         return np.array([

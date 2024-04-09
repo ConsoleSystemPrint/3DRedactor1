@@ -7,6 +7,7 @@ import pygame as pg
 class SoftwareRender:
     def __init__(self):
         pg.init()
+        # разрешение поверхности для отрисовки
         self.RES = self.WIDTH, self.HEIGHT = 1600, 900
         self.H_WIDTH, self.H_HEIGHT = self.WIDTH // 2, self.HEIGHT // 2
         self.FPS = 60
@@ -17,7 +18,7 @@ class SoftwareRender:
     def create_objects(self):
         self.camera = Camera(self, [-5, 6, -55])
         self.projection = Projection(self)
-        self.object = self.get_object_from_file('resources/stand.obj')
+        self.object = self.get_object_from_file('resources/j.obj')
         self.object.rotate_y(-math.pi / 4)
 
     def get_object_from_file(self, filename):
@@ -37,12 +38,14 @@ class SoftwareRender:
 
     def run(self):
         while True:
+            # отрисовка объектов и проверка на выход из приложения
             self.draw()
             self.camera.control()
             [exit() for i in pg.event.get() if i.type == pg.QUIT]
             pg.display.set_caption(str(self.clock.get_fps()))
             pg.display.flip()
             self.clock.tick(self.FPS)
+
 
 
 if __name__ == '__main__':

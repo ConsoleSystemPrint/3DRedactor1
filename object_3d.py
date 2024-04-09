@@ -3,6 +3,8 @@ from matrix import *
 from numba import njit
 
 
+# преобразование кода питона в машинный код с помощью декораторов вычислений
+# для оптимизации большого количества полигонов
 @njit(fastmath=True)
 def any_func(arr, a, b):
     return np.any((arr == a) | (arr == b))
@@ -22,17 +24,15 @@ class Object3D:
 
     def draw(self):
         self.screen_projection()
-        self.movement()
 
-    def movement(self):
-        if self.movement_flag:
-            self.rotate_y(-(pg.time.get_ticks() % 0.005))
+
+
 
     def screen_projection(self):
         vertices = self.vertices @ self.render.camera.camera_matrix()
         vertices = vertices @ self.render.projection.projection_matrix
         vertices /= vertices[:, -1].reshape(-1, 1)
-        vertices[(vertices > 2) | (vertices < -2)] = 0
+        vertices[(vertices > 6) | (vertices < -6)] = 0
         vertices = vertices @ self.render.projection.to_screen_matrix
         vertices = vertices[:, :2]
 
@@ -56,6 +56,7 @@ class Object3D:
     def scale(self, scale_to):
         self.vertices = self.vertices @ scale(scale_to)
 
+# функции масштабирования
     def rotate_x(self, angle):
         self.vertices = self.vertices @ rotate_x(angle)
 
