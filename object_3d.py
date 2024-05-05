@@ -23,6 +23,12 @@ class Object3D:
         self.label = ''
 
     def draw(self):
+        if self.render.move_object_mode:
+            # Перемещение объекта в режиме перемещения
+            pressed = pg.mouse.get_pressed()
+            if pressed[0]:  # Если нажата левая кнопка мыши
+                mouse_x, mouse_y = pg.mouse.get_rel()
+                self.translate([mouse_x * 0.1, -mouse_y * 0.1, 0])
         self.screen_projection()
 
 
@@ -50,11 +56,13 @@ class Object3D:
                 if not any_func(vertex, self.render.H_WIDTH, self.render.H_HEIGHT):
                     pg.draw.circle(self.render.screen, pg.Color('red'), vertex, 2)
 
-    def translate(self, pos):
-        self.vertices = self.vertices @ translate(pos)
+    def translate(self, move):
+        translation_matrix = translate(move)
+        self.vertices = self.vertices @ translation_matrix
 
-    def scale(self, scale_to):
-        self.vertices = self.vertices @ scale(scale_to)
+    def scale(self, scale_factor):
+        scale_matrix = np.diag([scale_factor, scale_factor, scale_factor, 1])
+        self.vertices = self.vertices @ scale_matrix
 
 # функции масштабирования
     def rotate_x(self, angle):
