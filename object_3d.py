@@ -21,8 +21,11 @@ class Object3D:
         self.color_faces = [(pg.Color('red'), face) for face in self.faces]
         self.movement_flag, self.draw_vertices = True, False
         self.label = ''
+        self.visible = True
 
     def draw(self):
+        if not self.visible:  # Если объект не видим, пропускаем его отрисовку
+            return
         if self.render.move_object_mode:
             # Перемещение объекта в режиме перемещения
             pressed = pg.mouse.get_pressed()

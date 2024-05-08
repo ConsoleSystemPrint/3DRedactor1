@@ -21,11 +21,17 @@ class SoftwareRender:
         self.scale_object_mode = False
         self.last_mouse_position = None
 
+        self.object_visible = True
+
     def create_objects(self):
         self.camera = Camera(self, [-5, 6, -55])
         self.projection = Projection(self)
         self.object = self.get_object_from_file('resources/stand.obj')
         self.object.rotate_y(-math.pi / 4)
+        self.object_visible = True
+
+    def toggle_object_visibility(self):
+        self.object_visible = not self.object_visible
 
     def get_object_from_file(self, filename):
         vertex, faces = [], []
@@ -40,14 +46,16 @@ class SoftwareRender:
 
     def draw(self):
         self.screen.fill(pg.Color('black'))
-        self.object.draw()
+        if self.object_visible:
+            self.object.draw()
 
     def run(self):
         while True:
             self.draw()
+            self.object.draw()
             if not self.move_object_mode and not self.scale_object_mode:  # Если не в режиме перемещения и не в режиме масштабирования
                 self.camera.control()
-            self.handle_events()
+            self.handle_events()  # Обработка событий, включая нажатие клавиши 'U'
             if self.scale_object_mode:
                 scroll = pg.mouse.get_rel()[1]  # Получение изменения положения колеса мыши
                 self.object.scale(scroll * 0.1)  # Масштабирование объекта
@@ -73,6 +81,10 @@ class SoftwareRender:
                 elif event.type == pg.MOUSEMOTION:
                     if self.last_mouse_position:
                         self.move_object(pg.mouse.get_pos())
+                if event.type == pg.QUIT:
+                    pg.quit()
+                    exit()
+
 
     def toggle_move_object_mode(self):
         self.move_object_mode = not self.move_object_mode
