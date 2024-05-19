@@ -8,7 +8,6 @@ class SoftwareRender:
     def __init__(self):
         pg.init()
         self.last_mouse_position = None
-        # разрешение поверхности для отрисовки
         self.RES = self.WIDTH, self.HEIGHT = 1600, 900
         self.H_WIDTH, self.H_HEIGHT = self.WIDTH // 2, self.HEIGHT // 2
         self.FPS = 60
@@ -49,20 +48,18 @@ class SoftwareRender:
             if not self.move_object_mode and not self.scale_object_mode:
                 self.camera.control()
             self.handle_events()
-            if self.scale_object_mode:
-                scroll = pg.mouse.get_rel()[1]  # Получение изменения положения колеса мыши
-                self.object.scale(scroll * 0.1)  # Масштабирование объекта
             pg.display.set_caption(str(self.clock.get_fps()))
             pg.display.flip()
             self.clock.tick(self.FPS)
 
     def handle_events(self):
+        keys = pg.key.get_pressed()
         for event in pg.event.get():
             if event.type == pg.QUIT:
                 pg.quit()
                 exit()
             elif event.type == pg.KEYDOWN:
-                self.handle_keys(event)  # Обработка нажатия клавиш
+                self.handle_keys(event)
 
             # Обработка событий мыши в зависимости от активного режима
             if self.move_object_mode:
@@ -74,8 +71,9 @@ class SoftwareRender:
                 elif event.type == pg.MOUSEMOTION and self.last_mouse_position:
                     self.move_object(pg.mouse.get_pos())
 
-            elif self.scale_object_mode:
-                self.handle_mouse_events(event)  # Предполагается, что это метод для обработки событий мыши при масштабировании
+            # Проверка нажатия Ctrl и обработка событий мыши при масштабировании
+            elif keys[pg.K_LCTRL] and event.type == pg.MOUSEBUTTONDOWN and (event.button == 4 or event.button == 5):
+                self.scale_object(event)
 
     def handle_keys(self, event):
         if event.key == pg.K_g:
@@ -108,9 +106,9 @@ class SoftwareRender:
             # Обновляем последнюю записанную позицию мыши.
             self.last_mouse_position = current_mouse_position
 
-    def handle_mouse_events(self, event):
-        # Здесь должна быть логика обработки событий мыши при масштабировании, пока эта функция просто заглушка
-        pass
+    def scale_object(self, event):
+        scale_factor = 1.1 if event.button == 4 else 0.9
+        self.object.scale(scale_factor)
 
 if __name__ == '__main__':
     app = SoftwareRender()
