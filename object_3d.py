@@ -87,3 +87,5 @@ class Axes(Object3D):
         self.color_faces = [(color, face) for color, face in zip(self.colors, self.faces)]
         self.draw_vertices = False
         self.label = 'XYZ'
+
+

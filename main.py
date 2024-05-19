@@ -7,7 +7,6 @@ import pygame as pg
 class SoftwareRender:
     def __init__(self):
         pg.init()
-        self.move_object_mode = False
         self.last_mouse_position = None
         # разрешение поверхности для отрисовки
         self.RES = self.WIDTH, self.HEIGHT = 1600, 900
@@ -19,7 +18,7 @@ class SoftwareRender:
         self.move_object_mode = False  # Режим перемещения объекта
 
         self.scale_object_mode = False
-        self.last_mouse_position = None
+        self.last_mouse_position = None # последняя координата мыши когда началось перемещние
 
         self.object_visible = True
 
@@ -52,10 +51,9 @@ class SoftwareRender:
     def run(self):
         while True:
             self.draw()
-            self.object.draw()
-            if not self.move_object_mode and not self.scale_object_mode:  # Если не в режиме перемещения и не в режиме масштабирования
+            if not self.move_object_mode and not self.scale_object_mode:
                 self.camera.control()
-            self.handle_events()  # Обработка событий, включая нажатие клавиши 'U'
+            self.handle_events()
             if self.scale_object_mode:
                 scroll = pg.mouse.get_rel()[1]  # Получение изменения положения колеса мыши
                 self.object.scale(scroll * 0.1)  # Масштабирование объекта
@@ -63,27 +61,34 @@ class SoftwareRender:
             pg.display.flip()
             self.clock.tick(self.FPS)
 
+
     def handle_events(self):
         for event in pg.event.get():
             if event.type == pg.QUIT:
+                pg.quit()
                 exit()
             elif event.type == pg.KEYDOWN:
                 self.handle_keys(event)  # Обработка нажатия клавиш
+
                 if event.key == pg.K_g:
-                    self.toggle_move_object_mode()
+                    self.toggle_move_object_mode()  # Переключение режима перемещения объекта
+
+                elif event.key == pg.K_u:  # Переключение режима масштабирования объекта
+                    self.toggle_scale_object_mode()
+
+            # Обработка событий мыши в зависимости от активного режима
             if self.move_object_mode:
-                if event.type == pg.MOUSEBUTTONDOWN:
-                    if event.button == 1:  # Левая кнопка мыши
+                if event.type in [pg.MOUSEBUTTONDOWN, pg.MOUSEBUTTONUP] and event.button == 1:
+                    if event.type == pg.MOUSEBUTTONDOWN:
                         self.last_mouse_position = pg.mouse.get_pos()
-                elif event.type == pg.MOUSEBUTTONUP:
-                    if event.button == 1:
+                    elif event.type == pg.MOUSEBUTTONUP:
                         self.last_mouse_position = None
-                elif event.type == pg.MOUSEMOTION:
-                    if self.last_mouse_position:
-                        self.move_object(pg.mouse.get_pos())
-                if event.type == pg.QUIT:
-                    pg.quit()
-                    exit()
+
+                elif event.type == pg.MOUSEMOTION and self.last_mouse_position:
+                    self.move_object(pg.mouse.get_pos())
+
+            elif self.scale_object_mode:
+                self.handle_mouse_events(event)  # Допустим, это метод для обработки событий мыши при масштабировании
 
 
     def toggle_move_object_mode(self):
@@ -94,22 +99,41 @@ class SoftwareRender:
 
     def move_object(self, current_mouse_position):
         if self.last_mouse_position:
+            # Вычисляем разницу между текущей позицией мыши и последней записанной позицией.
             dx = current_mouse_position[0] - self.last_mouse_position[0]
             dy = current_mouse_position[1] - self.last_mouse_position[1]
-            self.object.translate([dx * 0.5, -dy * 0.5, 0])  # Масштабируем перемещение
+            # Перемещаем объект на основе изменения позиции мыши.
+            # Масштабируем перемещение для более точного управления.
+            self.object.translate([dx * 0.5, -dy * 0.5, 0])  # Масштабируем перемещение 0.5 чувствительность
+            # Обновляем последнюю записанную позицию мыши.
             self.last_mouse_position = current_mouse_position
+            # Если move_object_mode включен и происходит нажатие левой кнопки мыши MOUSEBUTTONDOWN,
+            # записывается текущая позиция мыши last_mouse_position
+            # При движении мыши MOUSEMOTION, если last_mouse_position задана, вызывается метод move_object(),
+            # который рассчитывает разницу между текущей и последней известной позицией мыши и смещает объект
+            # переводит координаты
 
+
+            # При нажатии на клавишу G вызывается метод toggle_move_object_mode(),
+            # который переключает режим перемещения объекта move_object_mode
 
         ### Активация и деактивация режима изменения размера
     def toggle_scale_object_mode(self):
         self.scale_object_mode = not self.scale_object_mode
         pg.mouse.set_visible(self.scale_object_mode)
+        if self.scale_object_mode:
+            pg.event.get()  # Очищает очередь событий мыши после переключения режимов
 
     def handle_keys(self, event):
-        if event.key == pg.K_k:
+        if event.key == pg.K_u:  # Добавлено условие для обработки нажатия клавиши 'U'
             self.toggle_scale_object_mode()
+        if event.type == pg.MOUSEBUTTONDOWN or event.type == pg.MOUSEBUTTONUP:
+            if event.button == 4:  # Прокрутка вверх
+                self.object.scale(1.05)  # Увеличить масштаб на 5%
+            if event.button == 5:  # Прокрутка вниз
+                self.object.scale(0.95)  # Уменьшить масштаб на 5%
 
-     ### Обработка событий мыши для изменения размера
+     #Обработка событий мыши для изменения размера
     def handle_mouse_events(self, event):
         if self.scale_object_mode:
             if event.type == pg.MOUSEBUTTONDOWN:
