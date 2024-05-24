@@ -1,7 +1,6 @@
 import math
 import numpy as np
 
-# формирования матрицы проекции
 class Projection:
     def __init__(self, render):
         NEAR = render.camera.near_plane
@@ -15,7 +14,6 @@ class Projection:
         m11 = 2 / (TOP - BOTTOM)
         m22 = (FAR + NEAR) / (FAR - NEAR)
         m32 = -2 * NEAR * FAR / (FAR - NEAR)
-        # матрица проекции
         self.projection_matrix = np.array([
             [m00, 0, 0, 0],
             [0, m11, 0, 0],
@@ -23,7 +21,6 @@ class Projection:
             [0, 0, m32, 0]
         ])
 
-# преобразования координат вершин в разрешение экрана
         HW, HH = render.H_WIDTH, render.H_HEIGHT
         self.to_screen_matrix = np.array([
             [HW, 0, 0, 0],

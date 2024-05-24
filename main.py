@@ -4,6 +4,22 @@ from projection import *
 import pygame as pg
 
 
+class Button:
+    def __init__(self, text, x, y, width, height, callback):
+        self.rect = pg.Rect(x, y, width, height)
+        self.text = text
+        self.callback = callback
+        self.font = pg.font.SysFont(None, 24)
+        self.color = pg.Color('white')
+
+    def draw(self, screen):
+        pg.draw.rect(screen, self.color, self.rect, 2)
+        text_surface = self.font.render(self.text, True, self.color)
+        screen.blit(text_surface, (self.rect.x + 5, self.rect.y + 5))
+
+    def is_clicked(self, event_pos):
+        return self.rect.collidepoint(event_pos)
+
 class SoftwareRender:
     def __init__(self):
         pg.init()
@@ -13,12 +29,19 @@ class SoftwareRender:
         self.FPS = 60
         self.screen = pg.display.set_mode(self.RES)
         self.clock = pg.time.Clock()
-        self.move_object_mode = False  # Режим перемещения объекта
+        self.move_object_mode = False
         self.scale_object_mode = False
-        self.object_visible = False  # Объект невиден по умолчанию
+        self.object_visible = False
 
         self.camera = Camera(self, [-5, 6, -55])
         self.projection = Projection(self)
+
+        # Добавляем кнопки к интерфейсу
+        self.buttons = [
+            Button('Появление объекта', 150, 10, 240, 30, self.load_and_toggle_object_visibility),
+            Button('Перемещение объекта', 150, 50, 240, 30, self.toggle_move_object_mode),
+            Button('Масштабирование объекта', 150, 90, 240, 30, self.toggle_scale_object_mode)
+        ]
 
     def load_and_toggle_object_visibility(self):
         if not hasattr(self, 'object'):
@@ -42,6 +65,10 @@ class SoftwareRender:
         if self.object_visible:
             self.object.draw()
 
+        # Отрисовка кнопок
+        for button in self.buttons:
+            button.draw(self.screen)
+
     def run(self):
         while True:
             self.draw()
@@ -61,7 +88,12 @@ class SoftwareRender:
             elif event.type == pg.KEYDOWN:
                 self.handle_keys(event)
 
-            # Обработка событий мыши в зависимости от активного режима
+            # Обработка нажатий на кнопки
+            elif event.type == pg.MOUSEBUTTONDOWN and event.button == 1:
+                for button in self.buttons:
+                    if button.is_clicked(event.pos):
+                        button.callback()
+
             if self.move_object_mode:
                 if event.type in [pg.MOUSEBUTTONDOWN, pg.MOUSEBUTTONUP] and event.button == 1:
                     if event.type == pg.MOUSEBUTTONDOWN:
@@ -71,46 +103,43 @@ class SoftwareRender:
                 elif event.type == pg.MOUSEMOTION and self.last_mouse_position:
                     self.move_object(pg.mouse.get_pos())
 
-            # Проверка нажатия Ctrl и обработка событий мыши при масштабировании
             elif keys[pg.K_LCTRL] and event.type == pg.MOUSEBUTTONDOWN and (event.button == 4 or event.button == 5):
                 self.scale_object(event)
 
     def handle_keys(self, event):
         if event.key == pg.K_g:
-            self.toggle_move_object_mode()  # Переключение режима перемещения объекта
-        elif event.key == pg.K_u:  # Переключение режима масштабирования объекта
+            self.toggle_move_object_mode()
+        elif event.key == pg.K_u:
             self.toggle_scale_object_mode()
-        elif event.key == pg.K_t:  # Обработка нажатия клавиши 'T'
+        elif event.key == pg.K_t:
             self.load_and_toggle_object_visibility()
 
     def toggle_move_object_mode(self):
         self.move_object_mode = not self.move_object_mode
         pg.mouse.set_visible(self.move_object_mode)
         if self.move_object_mode:
-            pg.event.get()  # Очистить очередь событий мыши после переключения режимов
+            pg.event.get()
 
     def toggle_scale_object_mode(self):
         self.scale_object_mode = not self.scale_object_mode
         pg.mouse.set_visible(self.scale_object_mode)
         if self.scale_object_mode:
-            pg.event.get()  # Очистить очередь событий мыши после переключения режимов
+            pg.event.get()
 
     def move_object(self, current_mouse_position):
         if self.last_mouse_position:
-            # Вычисляем разницу между текущей позицией мыши и последней записанной позицией.
             dx = current_mouse_position[0] - self.last_mouse_position[0]
             dy = current_mouse_position[1] - self.last_mouse_position[1]
-            # Перемещаем объект на основе изменения позиции мыши.
-            # Масштабируем перемещение для более точного управления.
-            self.object.translate([dx * 0.5, -dy * 0.5, 0])  # Масштабируем перемещение 0.5 чувствительность
-            # Обновляем последнюю записанную позицию мыши.
+            self.object.translate([dx * 0.5, -dy * 0.5, 0])
             self.last_mouse_position = current_mouse_position
 
     def scale_object(self, event):
         scale_factor = 1.1 if event.button == 4 else 0.9
         self.object.scale(scale_factor)
 
-if __name__ == '__main__':
+def main():
     app = SoftwareRender()
     app.run()
 
+if __name__ == "__main__":
+    main()

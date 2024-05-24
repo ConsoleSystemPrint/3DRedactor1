@@ -24,7 +24,7 @@ class Object3D:
         self.visible = True
 
     def draw(self):
-        if not self.visible:  # Если объект не видим, пропускаем его отрисовку
+        if not self.visible:
             return
         if self.render.move_object_mode:
             # Перемещение объекта в режиме перемещения
@@ -87,5 +87,3 @@ class Axes(Object3D):
         self.color_faces = [(color, face) for color, face in zip(self.colors, self.faces)]
         self.draw_vertices = False
         self.label = 'XYZ'
-
-
